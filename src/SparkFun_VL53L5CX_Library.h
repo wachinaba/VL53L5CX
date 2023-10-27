@@ -52,14 +52,14 @@ private:
     void clearErrorStruct();
 
 public:
-    SparkFun_VL53L5CX_IO* VL53L5CX_i2c; // I2C driver object
-    VL53L5CX_Configuration* Dev;        // Sensor condfiguration struct
+    SparkFun_VL53L5CX_IO *VL53L5CX_i2c; // I2C driver object
+    VL53L5CX_Configuration *Dev;        // Sensor condfiguration struct
 
     // This struct holds the last error which happened (if any).
     SparkFun_VL53L5CX_Error lastError;
 
     // Default empty constructor.
-    SparkFun_VL53L5CX(){};
+    SparkFun_VL53L5CX() : VL53L5CX_i2c(nullptr), Dev(nullptr) {}
 
     // Start up the sensor. Passing an address and Wire port instance is optional.
     bool begin(byte address = (DEFAULT_I2C_ADDR >> 1), TwoWire &wirePort = Wire);
