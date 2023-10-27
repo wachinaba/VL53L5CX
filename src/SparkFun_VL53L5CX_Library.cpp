@@ -34,10 +34,12 @@ bool SparkFun_VL53L5CX::begin(byte address, TwoWire &wirePort)
 {
     clearErrorStruct();
 
+    if (VL53L5CX_i2c != nullptr)
+    {
+        delete VL53L5CX_i2c;
+        VL53L5CX_i2c = nullptr;
+    }
     VL53L5CX_i2c = new SparkFun_VL53L5CX_IO();
-    Dev = new VL53L5CX_Configuration();
-
-    Dev->platform.VL53L5CX_i2c = VL53L5CX_i2c;
 
     bool ready = VL53L5CX_i2c->begin(address, wirePort);
     uint8_t result = 0;
@@ -62,6 +64,15 @@ bool SparkFun_VL53L5CX::begin(byte address, TwoWire &wirePort)
         SAFE_CALLBACK(errorCallback, lastError.lastErrorCode, lastError.lastErrorValue);
         return false;
     }
+
+    if (Dev != nullptr)
+    {
+        delete Dev;
+        Dev = nullptr;
+    }
+    Dev = new VL53L5CX_Configuration();
+
+    Dev->platform.VL53L5CX_i2c = VL53L5CX_i2c;
 
     result = vl53l5cx_init(Dev);
 
@@ -111,19 +122,19 @@ bool SparkFun_VL53L5CX::setAddress(uint8_t newAddress)
     clearErrorStruct();
 
     // Don't use core vl53l5cx_set_i2c_address() as it calls WrByte with new address that SparkFun driver is not yet aware of
-    //uint8_t result = vl53l5cx_set_i2c_address(Dev, static_cast<uint16_t>(newAddress));
+    // uint8_t result = vl53l5cx_set_i2c_address(Dev, static_cast<uint16_t>(newAddress));
 
     uint8_t result = VL53L5CX_i2c->writeSingleByte(0x7fff, 0x00);
     result |= VL53L5CX_i2c->writeSingleByte(0x4, newAddress);
 
     if (result == 0)
     {
-        VL53L5CX_i2c->setAddress(newAddress); //Tell the middle layer what our new address is
-        _i2cAddress = newAddress; //Tell Arduino lib what our new address is
-        vl53l5cx_set_i2c_address(Dev, static_cast<uint16_t>(newAddress)); //Tell the core what our new address is
-        
-        result |= VL53L5CX_i2c->writeSingleByte(0x7fff, 0x02); //Do last write with new address
-        
+        VL53L5CX_i2c->setAddress(newAddress);                             // Tell the middle layer what our new address is
+        _i2cAddress = newAddress;                                         // Tell Arduino lib what our new address is
+        vl53l5cx_set_i2c_address(Dev, static_cast<uint16_t>(newAddress)); // Tell the core what our new address is
+
+        result |= VL53L5CX_i2c->writeSingleByte(0x7fff, 0x02); // Do last write with new address
+
         return true;
     }
 
